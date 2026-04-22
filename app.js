@@ -95,7 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
             earnings: 0, penalties: 0, walkouts: 0, handled: 0, arrivals: 0, walkIns: 0,
             salesGold: 0, salesDiamond: 0, salesSilver: 0, doubleSaleImpact: 0,
             upsoldCustomers: [], liveRoomConverted: []
-        }
+        },
+        recentScenarios: []
     };
 
     const zoneMap = {
@@ -730,7 +731,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let grid = modal.querySelector('.scenario-grid');
         grid.innerHTML = '';
 
-        let shuffled = [...scenarios].sort(() => 0.5 - Math.random());
+        let availableScenarios = scenarios.filter(s => !state.recentScenarios.includes(s.name));
+        let shuffled = [...availableScenarios].sort(() => 0.5 - Math.random());
         let choices = shuffled.slice(0, 4);
 
         choices.forEach(scen => {
@@ -743,6 +745,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             card.addEventListener('click', function onClick() {
                 state.currentScenario = scen;
+                state.recentScenarios.push(scen.name);
+                if (state.recentScenarios.length > 2) {
+                    state.recentScenarios.shift();
+                }
+
                 card.classList.remove('mystery');
                 card.innerHTML = `<div style="font-size: 0.9rem; padding: 10px;">
                     <h4 style="color: var(--accent-orange)">${scen.name}</h4>
