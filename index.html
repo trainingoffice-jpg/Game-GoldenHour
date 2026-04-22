@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Golden Hours | Operations Manager</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .ctx-btn { background: transparent; border: none; color: var(--text-primary); padding: 5px 10px; cursor: pointer; text-align: left; width: 100%; border-bottom: 1px solid rgba(0,0,0,0.1); }
+      .ctx-btn:hover { background: var(--accent-orange); color: #fff; }
+      .ctx-btn:last-child { border-bottom: none; }
+      .toast { position: fixed; top: 20px; right: 20px; background: var(--navy-blue); border-left: 4px solid var(--accent-orange); padding: 15px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 10000; transition: all 0.3s; transform: translateX(150%); }
+      .toast.show { transform: translateX(0); }
+      .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; }
+      .summary-grid .panel { background: rgba(0,0,0,0.05); padding: 15px; border-radius: 10px; }
+      .summary-grid h3 { color: var(--accent-orange); margin-bottom: 10px; font-size: 0.9rem; }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body class="light-theme">
+    <div id="start-screen" style="position: absolute; top:0; left:0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+        <h1 style="font-size: 3.5rem; color: var(--accent-orange); margin-bottom: 20px; font-family: 'Outfit', sans-serif;">GOLDEN HOURS</h1>
+        <h2 style="font-size: 1.5rem; color: var(--text-primary); margin-bottom: 50px; font-weight: 300;">Operations Manager Simulation</h2>
+        <button id="real-start-btn" style="background: var(--accent-orange); color: #fff; font-weight: bold; cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 1.5rem; padding: 15px 50px; border: none; border-radius: 50px; box-shadow: 0 5px 20px var(--accent-glow); transition: transform 0.2s;">START SHIFT</button>
+    </div>
+    <div id="game-container">
+      <!-- TOP BAR -->
+      <header id="top-bar">
+        <div class="brand">
+          <div class="logo-container">
+            <i class="fas fa-clock-rotate-left"></i>
+          </div>
+          <div class="titles">
+            <h1>GOLDEN HOURS</h1>
+            <p class="subtitle">OPERATIONS MANAGER</p>
+          </div>
+        </div>
+
+        <div class="timer-display">
+          <div class="timer-value" id="game-timer">00:00</div>
+          <div class="phase-indicator">PLANNING PHASE</div>
+        </div>
+
+        <div class="stats-bar">
+          <div class="stat-item earnings">
+            <span class="label">Earnings</span>
+            <span class="value" id="stat-earnings">$0.00</span>
+          </div>
+          <div class="stat-item penalty">
+            <span class="label">Penalty</span>
+            <span class="value" id="stat-penalty">$0.00</span>
+          </div>
+          <div class="stat-item walkouts">
+            <span class="label">Walkouts</span>
+            <span class="value" id="stat-walkouts">0</span>
+          </div>
+          <div class="stat-item handled">
+            <span class="label">Handled</span>
+            <span class="value" id="stat-handled">0</span>
+          </div>
+        </div>
+
+        <button id="start-shift-btn" class="primary-btn">
+          <i class="fas fa-play"></i> START SHIFT
+        </button>
+      </header>
+
+      <main id="dashboard">
+        <!-- LEFT: CUSTOMER QUEUE -->
+        <aside id="customer-queue">
+          <div class="section-header">
+            <h2>CUSTOMER QUEUE</h2>
+            <span class="badge" id="queue-count">0</span>
+          </div>
+          <div class="queue-container" id="queue-list">
+            <!-- Placeholder cards will be injected here -->
+          </div>
+        </aside>
+
+        <!-- CENTER: OPERATION ZONES -->
+        <section id="operation-zones">
+          <div class="zone-grid">
+            <div class="zone-card" id="zone-entrance" data-zone="entrance">
+              <div class="zone-header">
+                <h3>ENTRANCE</h3>
+                <i class="fas fa-door-open"></i>
+              </div>
+              <div class="zone-body">
+                <div class="presence-grid customers-slot"></div>
+              </div>
+              <div class="zone-footer">
+                <div class="metric">
+                  <i class="fas fa-users"></i>
+                  <span class="cust-count">0</span>/10
+                </div>
+                <div class="staff-slots">
+                  <!-- Staff tokens go here -->
+                </div>
+              </div>
+            </div>
+
+            <div class="zone-card" id="zone-gold" data-zone="gold">
+              <div class="zone-header">
+                <h3>GOLD COUNTER</h3>
+                <i class="fas fa-coins"></i>
+              </div>
+              <div class="zone-body">
+                <div class="presence-grid customers-slot"></div>
+              </div>
+              <div class="zone-footer">
+                <div class="metric">
+                  <i class="fas fa-users"></i>
+                  <span class="cust-count">0</span>/5
+                </div>
+                <div class="staff-slots"></div>
+              </div>
+            </div>
+
+            <div class="zone-card" id="zone-silver" data-zone="silver">
+              <div class="zone-header">
+                <h3>SILVER COUNTER</h3>
+                <i class="fas fa-silver-plate"></i>
+              </div>
+              <div class="zone-body">
+                <div class="presence-grid customers-slot"></div>
+              </div>
+              <div class="zone-footer">
+                <div class="metric">
+                  <i class="fas fa-users"></i>
+                  <span class="cust-count">0</span>/5
+                </div>
+                <div class="staff-slots"></div>
+              </div>
+            </div>
+
+            <div class="zone-card" id="zone-diamond" data-zone="diamond">
+              <div class="zone-header">
+                <h3>PLATINUM & DIAMOND</h3>
+                <i class="fas fa-gem"></i>
+              </div>
+              <div class="zone-body">
+                <div class="presence-grid customers-slot"></div>
+              </div>
+              <div class="zone-footer">
+                <div class="metric">
+                  <i class="fas fa-users"></i>
+                  <span class="cust-count">0</span>/3
+                </div>
+                <div class="staff-slots"></div>
+              </div>
+            </div>
+
+            <div class="zone-card" id="zone-appraiser" data-zone="appraiser">
+              <div class="zone-header">
+                <h3>APPRAISER</h3>
+                <i class="fas fa-magnifying-glass-chart"></i>
+              </div>
+              <div class="zone-body">
+                <div class="presence-grid customers-slot"></div>
+              </div>
+              <div class="zone-footer">
+                <div class="metric">
+                  <i class="fas fa-users"></i>
+                  <span class="cust-count">0</span>/4
+                </div>
+                <div class="staff-slots"></div>
+              </div>
+            </div>
+
+            <div class="zone-card" id="zone-billing" data-zone="billing">
+              <div class="zone-header">
+                <h3>BILLING</h3>
+                <i class="fas fa-receipt"></i>
+              </div>
+              <div class="zone-body">
+                <div class="presence-grid customers-slot"></div>
+              </div>
+              <div class="zone-footer">
+                <div class="metric">
+                  <i class="fas fa-users"></i>
+                  <span class="cust-count">0</span>/8
+                </div>
+                <div class="staff-slots"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT: BACK OFFICE -->
+        <aside id="back-office">
+          <nav class="side-tabs">
+            <button class="tab-btn active" data-tab="live">Live Room</button>
+            <button class="tab-btn" data-tab="backoffice">Back Office <span id="bo-badge" class="hidden" style="color:var(--danger)">●</span></button>
+          </nav>
+          <div class="tab-content" id="live-room-content">
+            <div class="placeholder-content">
+              <i class="fas fa-tower-broadcast"></i>
+              <p>Live Monitoring Feed</p>
+              <div id="live-room-customers" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; justify-content:center;"></div>
+            </div>
+          </div>
+          <div class="tab-content hidden" id="backoffice-content">
+            <div id="bo-log" style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 10px; text-align: left;">
+              <div class="text-muted" style="text-align:center; padding-top:20px;">Awaiting Instructions</div>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.05); margin: 15px 0;">
+            <div id="walkout-logs-container" style="text-align: left;"></div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">Head Office Directives Portal</div>
+          </div>
+          <div id="active-scenario-panel" style="margin-top: auto; padding: 10px; background: rgba(255, 140, 0, 0.05); border: 1px solid var(--accent-orange); border-radius: 8px;">
+            <h4 style="color: var(--accent-orange); font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px;">Active Scenario</h4>
+            <div id="active-scenario-name" style="font-weight: bold; font-size: 0.9rem;">None</div>
+            <div id="active-scenario-effect" style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 3px;">Standard shift rules apply</div>
+          </div>
+        </aside>
+      </main>
+
+      <!-- BOTTOM: STAFF POOL -->
+      <footer id="staff-tray">
+        <div class="tray-header">
+          <h3>STAFF TOKEN POOL</h3>
+          <span class="count"
+            >Available: <span id="staff-available">30</span>/30</span
+          >
+        </div>
+        <div class="token-container" id="staff-pool">
+          <!-- Staff tokens will be injected here -->
+        </div>
+      </footer>
+
+      <!-- MODALS -->
+      <div id="modal-overlay" class="hidden">
+        <!-- Scenario Mystery Card Modal -->
+        <div id="scenario-modal" class="modal-card hidden">
+          <h2>SELECT SHIFT SCENARIO</h2>
+          <p>Choose a mystery card to reveal the day's special conditions.</p>
+          <div class="scenario-grid">
+            <div class="scenario-card mystery">
+              <div class="card-inner">
+                <div class="card-front"><i class="fas fa-question"></i></div>
+              </div>
+            </div>
+            <div class="scenario-card mystery">
+              <div class="card-inner">
+                <div class="card-front"><i class="fas fa-question"></i></div>
+              </div>
+            </div>
+            <div class="scenario-card mystery">
+              <div class="card-inner">
+                <div class="card-front"><i class="fas fa-question"></i></div>
+              </div>
+            </div>
+            <div class="scenario-card mystery">
+              <div class="card-inner">
+                <div class="card-front"><i class="fas fa-question"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Modal -->
+        <div id="summary-modal" class="modal-card hidden" style="max-height: 90vh; overflow-y: auto; width: 85%; max-width: 800px;">
+          <div class="summary-header">
+            <h2>SHIFT SUMMARY AND EXPORT</h2>
+            <span class="date" id="summary-date">Day 1</span>
+          </div>
+          <div class="summary-grid">
+            <div class="panel">
+                <h3>OVERVIEW</h3>
+                <div class="summary-row"><span>Total Arrivals</span><span id="sum-total-cust">0</span></div>
+                <div class="summary-row"><span>Completed Customers</span><span id="sum-sales">0</span></div>
+                <div class="summary-row" style="color: var(--danger)"><span>Walkouts</span><span id="sum-walkouts">0</span></div>
+                <div class="summary-row" style="color: var(--danger)"><span>Total Penalties</span><span id="sum-penalties">$0</span></div>
+                <div class="summary-row primary" style="color: var(--success); font-size: 1.1rem; margin-top: 10px;"><span>Total Earnings</span><span id="sum-total-earnings">$0</span></div>
+            </div>
+            <div class="panel">
+                <h3>CATEGORY SALES</h3>
+                <div class="summary-row" style="color: #fbbf24"><span>Gold</span><span id="sum-gold">0g</span></div>
+                <div class="summary-row" style="color: #7dd3fc"><span>Diamond</span><span id="sum-diamond">0c</span></div>
+                <div class="summary-row" style="color: #cbd5e1"><span>Silver</span><span id="sum-silver">0g</span></div>
+                <div class="summary-row" style="color: var(--accent-orange); margin-top:10px; border-top:1px solid #333; padding-top:10px;"><span>Reassigned Bonus Impact</span><span id="sum-double-impact">$0</span></div>
+            </div>
+          </div>
+
+          <div style="text-align: left; margin-top: 20px;">
+              <h3>Upsells & Conversions</h3>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;">Live Room Converted: <span id="sum-liveroom-list">None</span></p>
+              <p style="font-size:0.8rem; color:var(--text-muted)">Back Office Directed Upsells: <span id="sum-upsell-list">None</span></p>
+          </div>
+
+          <div style="text-align: left; margin-top: 20px;">
+              <h3 style="color:var(--danger)">Walkout Loss Details</h3>
+              <table style="width:100%; font-size:0.75rem; border-collapse:collapse; margin-top:10px;" id="sum-walkout-table">
+                  <tr style="border-bottom:1px solid #333; color:var(--text-muted);">
+                    <th style="padding-bottom:5px;">Name</th>
+                    <th style="padding-bottom:5px;">Location</th>
+                    <th style="padding-bottom:5px;">Type</th>
+                    <th style="padding-bottom:5px;">Time</th>
+                    <th style="padding-bottom:5px;">Rounds Waiting</th>
+                    <th style="text-align:right; padding-bottom:5px;">Value Lost</th>
+                  </tr>
+                  <tbody id="sum-walkout-tbody"></tbody>
+              </table>
+          </div>
+
+          <button class="primary-btn pulse" id="next-day-btn" style="margin-top: 25px; width: 100%; justify-content: center;">
+            CONTINUE TO NEXT DAY
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "golden-hours-operations-manager",
+  "version": "1.0.0",
+  "description": "Premium showroom management simulation game",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
