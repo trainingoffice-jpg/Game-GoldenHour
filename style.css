@@ -1,16 +1,16 @@
 :root {
-    --bg-dark: #f0f4f8;
-    --bg-card: #ffffff;
-    --navy-blue: #ffffff;
-    --accent-orange: #2563eb;
-    --accent-glow: rgba(37, 99, 235, 0.2);
-    --text-primary: #000000;
-    --text-secondary: #001f3f;
-    --text-muted: #003366;
-    --success: #10b981;
-    --danger: #ef4444;
-    --card-border: #cbd5e1;
-    --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    --bg-dark: #0e0b2e;           /* deep indigo background */
+    --bg-card: #1a1650;           /* rich dark purple card */
+    --navy-blue: #1a1650;
+    --accent-orange: #f59e0b;     /* warm gold */
+    --accent-glow: rgba(245,158,11,0.35);
+    --text-primary: #ffffff;
+    --text-secondary: #c7d2fe;
+    --text-muted: #a5b4fc;
+    --success: #22c55e;
+    --danger: #f43f5e;
+    --card-border: rgba(245,158,11,0.25);
+    --card-shadow: 0 8px 30px rgba(0,0,0,0.5);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -40,7 +40,7 @@ h1, h2, h3, .timer-value {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: #334155;
+    background: #4c1d95;
     border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -59,12 +59,12 @@ h1, h2, h3, .timer-value {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--bg-card);
+    background: linear-gradient(135deg, #1a0533 0%, #0e0b2e 50%, #1a1650 100%);
     padding: 15px 30px;
     border-radius: 12px;
-    border: 1px solid var(--card-border);
+    border: 1px solid rgba(245,158,11,0.3);
     margin-bottom: 10px;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
 }
 
 .brand {
@@ -89,7 +89,7 @@ h1, h2, h3, .timer-value {
     font-size: 1.2rem;
     letter-spacing: 2px;
     line-height: 1;
-    color: #b8860b; /* Dark goldenrod for contrast on white */
+    color: #fbbf24; /* Bright jewellery gold */
 }
 
 .titles .subtitle {
@@ -172,9 +172,9 @@ h1, h2, h3, .timer-value {
 }
 
 aside {
-    background: var(--bg-card);
+    background: linear-gradient(180deg, #1a1650 0%, #0f0c2b 100%);
     border-radius: 12px;
-    border: 1px solid var(--card-border);
+    border: 1px solid rgba(245,158,11,0.2);
     display: flex;
     flex-direction: column;
     padding: 15px;
@@ -214,9 +214,9 @@ aside {
 }
 
 .customer-card {
-    background: #f8fafc;
+    background: rgba(255,255,255,0.06);
     border-radius: 10px;
-    border: 1px solid var(--card-border);
+    border: 1px solid rgba(245,158,11,0.2);
     padding: 12px;
     display: flex;
     align-items: center;
@@ -226,19 +226,19 @@ aside {
 }
 
 .customer-card:hover {
-    background: #e2e8f0;
-    border-color: #cbd5e1;
+    background: rgba(245,158,11,0.12);
+    border-color: rgba(245,158,11,0.4);
 }
 
 .cust-avatar {
     width: 35px;
     height: 35px;
-    background: #e0e7ff;
+    background: rgba(245,158,11,0.2);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--accent-orange);
+    color: #fbbf24;
 }
 
 .cust-info {
@@ -302,13 +302,20 @@ aside {
     background-repeat: no-repeat;
 }
 
-/* Semi-transparent white overlay so content stays readable on top of image */
+.zone-card[data-zone="entrance"]::before  { background: rgba(251,191,36,0.40); }
+.zone-card[data-zone="gold"]::before      { background: rgba(234,179,8,0.40); }
+.zone-card[data-zone="silver"]::before    { background: rgba(148,163,184,0.42); }
+.zone-card[data-zone="diamond"]::before   { background: rgba(14,165,233,0.38); }
+.zone-card[data-zone="appraiser"]::before { background: rgba(168,85,247,0.38); }
+.zone-card[data-zone="billing"]::before   { background: rgba(34,197,94,0.35); }
+
+/* Base ::before for all zone cards */
 .zone-card::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 15px;
-    background: rgba(240, 248, 255, 0.72);
+    background: rgba(14,10,40,0.45);
     pointer-events: none;
     z-index: 0;
 }
@@ -327,7 +334,8 @@ aside {
 .zone-card[data-zone="billing"]   { background-image: url('img/counter_billing.png'); }
 
 .zone-card:hover {
-    border-color: rgba(37, 99, 235, 0.5);
+    border-color: rgba(245,158,11,0.7);
+    box-shadow: 0 6px 20px rgba(245,158,11,0.2);
 }
 
 .zone-header {
@@ -340,17 +348,19 @@ aside {
 .zone-header h3 {
     font-size: 0.9rem;
     letter-spacing: 1px;
-    color: var(--text-secondary);
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 
 .zone-header i {
-    color: var(--text-secondary);
-    opacity: 0.8;
+    color: #fbbf24;
+    opacity: 1;
 }
 
 .zone-body {
     flex: 1;
-    background: rgba(255,255,255,0.5); /* Semi-transparent white to contrast against the sky blue card */
+    background: rgba(0,0,0,0.25);
     border-radius: 10px;
     margin-bottom: 8px;
     padding: 8px;
@@ -385,14 +395,14 @@ aside {
 
 .cust-tooltip {
     display: none;
-    background: #ffffff;
-    border: 1px solid var(--accent-orange);
-    color: var(--text-primary);
+    background: #1a1650;
+    border: 1px solid #f59e0b;
+    color: #ffffff;
     padding: 12px;
     border-radius: 8px;
     width: 220px;
     font-size: 0.8rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
     pointer-events: none;
     text-align: left;
 }
@@ -400,11 +410,11 @@ aside {
     display: block;
 }
 .cust-tooltip .tt-name {
-    color: var(--accent-orange);
+    color: #fbbf24;
     font-weight: bold;
     font-size: 0.85rem;
     margin-bottom: 5px;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(245,158,11,0.3);
     padding-bottom: 5px;
 }
 .cust-tooltip div {
@@ -419,7 +429,9 @@ aside {
 
 .metric {
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: #fbbf24;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 .staff-slots {
@@ -438,9 +450,9 @@ aside {
 
 /* STAFF POOL */
 #staff-tray {
-    background: var(--bg-card);
+    background: linear-gradient(180deg, #1a1650 0%, #0f0c2b 100%);
     border-radius: 12px;
-    border: 1px solid var(--card-border);
+    border: 1px solid rgba(245,158,11,0.25);
     margin-top: 10px;
     padding: 15px;
     display: flex;
