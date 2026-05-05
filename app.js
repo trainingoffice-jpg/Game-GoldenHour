@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = {
         totalStaff: 30,
         round: 1,
-        maxRounds: 4,
+        maxRounds: 10,
         phase: 'PLANNING',
         customers: [],
         timerInterval: null,
@@ -130,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function init() {
         createStaffTokens();
         setupDragAndDrop();
+        setupStaffButtons();
         setupModals();
         
         ctxMenu = document.createElement('div');
@@ -262,6 +263,38 @@ document.addEventListener('DOMContentLoaded', () => {
             if (draggedToken) {
                 DOM.staffPool.appendChild(draggedToken);
                 updateAllZoneCapacities(); updateStaffCount();
+            }
+        });
+    }
+
+    function setupStaffButtons() {
+        DOM.zones.forEach(zone => {
+            const plusBtn = zone.querySelector('.plus-staff-btn');
+            const minusBtn = zone.querySelector('.minus-staff-btn');
+            const staffSlots = zone.querySelector('.staff-slots');
+
+            if (plusBtn) {
+                plusBtn.addEventListener('click', () => {
+                    if (state.phase !== 'PLANNING' && !(state.currentScenario && state.currentScenario.name === 'Golden Pulse')) return;
+                    if (DOM.staffPool.children.length > 0) {
+                        const token = DOM.staffPool.lastElementChild;
+                        staffSlots.appendChild(token);
+                        updateAllZoneCapacities();
+                        updateStaffCount();
+                    }
+                });
+            }
+
+            if (minusBtn) {
+                minusBtn.addEventListener('click', () => {
+                    if (state.phase !== 'PLANNING' && !(state.currentScenario && state.currentScenario.name === 'Golden Pulse')) return;
+                    if (staffSlots.children.length > 0) {
+                        const token = staffSlots.lastElementChild;
+                        DOM.staffPool.appendChild(token);
+                        updateAllZoneCapacities();
+                        updateStaffCount();
+                    }
+                });
             }
         });
     }
