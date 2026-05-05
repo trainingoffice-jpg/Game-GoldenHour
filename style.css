@@ -641,5 +641,37 @@ aside {
 @keyframes pulse-animation {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+}
+
+/* Staff Allocation Controls */
+.staff-controls {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.minus-staff-btn, .plus-staff-btn {
+    background: rgba(5, 3, 18, 0.95);
+    color: var(--accent-orange);
+    border: 1px solid var(--accent-orange);
+    border-radius: 4px;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.minus-staff-btn:hover, .plus-staff-btn:hover {
+    background: rgba(245,158,11,0.2);
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.staff-slots .staff-token {
+    width: 24px;
+    height: 24px;
+    font-size: 9px;
 }
