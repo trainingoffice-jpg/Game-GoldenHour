@@ -452,6 +452,8 @@ aside {
     gap: 5px;
     flex-wrap: wrap;
     min-height: 32px;
+    flex: 1;
+    justify-content: flex-end;
 }
 
 .staff-slot-empty {

@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         timerInterval: null,
         currentScenario: null,
         headOfficeTasks: [],
+        pantryOrders: [],
         walkoutRecords: [],
         stats: {
             earnings: 0, penalties: 0, walkouts: 0, handled: 0, arrivals: 0, walkIns: 0,
@@ -200,6 +201,28 @@ document.addEventListener('DOMContentLoaded', () => {
         task.completed = true;
         ctxMenu.classList.add('hidden');
         renderCustomers(); 
+    };
+
+    window.serveBeverage = function(orderId) {
+        let order = state.pantryOrders.find(p => p.id === orderId);
+        if(!order) return;
+        let c = state.customers.find(cu => cu.uid === order.customerUid);
+        if(!c) return;
+
+        order.completed = true;
+        c.wantsBeverage = false;
+        
+        state.stats.earnings += 5000;
+        
+        ctxMenu.classList.add('hidden');
+        
+        let orderEl = document.getElementById(orderId);
+        if(orderEl) orderEl.remove();
+        
+        let logEl = document.getElementById('pantry-orders');
+        if (logEl && logEl.innerHTML.trim() === '') logEl.innerHTML = 'No active orders';
+        
+        updateStats();
     };
 
     function createStaffTokens() {
@@ -432,6 +455,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function generatePantryOrder() {
+        if (Math.random() > 0.4) {
+            let eligible = state.customers.filter(c => c.active && !c.finished && !c.wantsBeverage);
+            if (eligible.length > 0) {
+                let target = eligible[Math.floor(Math.random() * eligible.length)];
+                target.wantsBeverage = true;
+                
+                let bevType = Math.random() > 0.5 ? 'Tea' : 'Coffee';
+                let id = 'p_' + Date.now();
+                let order = { id, customerUid: target.uid, type: bevType, name: target.name, completed: false };
+                state.pantryOrders.push(order);
+                
+                let msg = `Customer ${target.name} requested ${bevType}.`;
+                
+                let logEl = document.getElementById('pantry-orders');
+                if (logEl) {
+                    if (logEl.innerHTML.includes('No active')) logEl.innerHTML = '';
+                    logEl.innerHTML = `<div id="${id}" style="background:rgba(16,185,129,0.1); border-left:3px solid var(--success); padding:10px; margin-bottom:5px;"><b>PANTRY REQUEST:</b><br>${msg}</div>` + logEl.innerHTML;
+                }
+                
+                let t = document.createElement('div');
+                t.className = 'toast show';
+                t.innerHTML = `<i class="fas fa-mug-hot"></i> ${msg}`;
+                document.body.appendChild(t);
+                setTimeout(() => {
+                    t.classList.remove('show');
+                    setTimeout(() => t.remove(), 500);
+                }, 6000);
+            }
+        }
+    }
+
     function formatNumber(num) {
         return num.toLocaleString();
     }
@@ -509,13 +564,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                 icon.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    let html = '';
                     let tasks = state.headOfficeTasks.filter(t => t.customerUid === c.uid && !t.completed);
-                    if (tasks.length > 0) {
-                        let html = '';
-                        tasks.forEach(t => {
-                            if (t.type === 'DIAMOND') html += `<button class="ctx-btn" onclick="executeTask('${t.id}', 'DIAMOND')">Move to Diamond Counter</button>`;
-                            else html += `<button class="ctx-btn" onclick="executeTask('${t.id}', 'LIVE_ROOM')">Send to Live Room</button>`;
-                        });
+                    tasks.forEach(t => {
+                        if (t.type === 'DIAMOND') html += `<button class="ctx-btn" onclick="executeTask('${t.id}', 'DIAMOND')">Move to Diamond Counter</button>`;
+                        else html += `<button class="ctx-btn" onclick="executeTask('${t.id}', 'LIVE_ROOM')">Send to Live Room</button>`;
+                    });
+
+                    let pantryOrder = state.pantryOrders.find(p => p.customerUid === c.uid && !p.completed);
+                    if (pantryOrder) {
+                        html += `<button class="ctx-btn" onclick="serveBeverage('${pantryOrder.id}')">Serve ${pantryOrder.type}</button>`;
+                    }
+
+                    if (html !== '') {
                         ctxMenu.innerHTML = html;
                         ctxMenu.style.left = e.pageX + 'px';
                         ctxMenu.style.top = e.pageY + 'px';
@@ -845,6 +906,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startPlanningPhase() {
         generateHeadOfficeTask(); // Generate HO tasks during planning natively
+        generatePantryOrder(); // Generate Pantry order
 
         state.phase = 'PLANNING';
         DOM.phaseIndicator.innerText = `ROUND ${state.round} - PLANNING`;
