@@ -196,7 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
             c.waitedLastRound = false;
             c.waitCount = 0;
             c.status = 'green';
-            document.querySelector('.tab-btn[data-tab="live"]').click();
         }
         task.completed = true;
         ctxMenu.classList.add('hidden');
