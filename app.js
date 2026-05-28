@@ -274,19 +274,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        const staffTray = document.getElementById('staff-tray');
-        staffTray.addEventListener('dragover', e => {
-            if (state.phase !== 'PLANNING' && !(state.currentScenario && state.currentScenario.name === 'Golden Pulse')) return;
-            e.preventDefault();
-        });
-        staffTray.addEventListener('drop', e => {
-            if (state.phase !== 'PLANNING' && !(state.currentScenario && state.currentScenario.name === 'Golden Pulse')) return;
-            e.preventDefault();
-            if (draggedToken) {
-                DOM.staffPool.appendChild(draggedToken);
-                updateAllZoneCapacities(); updateStaffCount();
-            }
-        });
+        const staffSummary = document.getElementById('staff-summary-panel');
+        if (staffSummary) {
+            staffSummary.addEventListener('dragover', e => {
+                if (state.phase !== 'PLANNING' && !(state.currentScenario && state.currentScenario.name === 'Golden Pulse')) return;
+                e.preventDefault();
+            });
+            staffSummary.addEventListener('drop', e => {
+                if (state.phase !== 'PLANNING' && !(state.currentScenario && state.currentScenario.name === 'Golden Pulse')) return;
+                e.preventDefault();
+                if (draggedToken) {
+                    DOM.staffPool.appendChild(draggedToken);
+                    updateAllZoneCapacities(); updateStaffCount();
+                }
+            });
+        }
     }
 
     function setupStaffButtons() {
