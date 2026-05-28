@@ -811,8 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for(let i=0; i<toRemove; i++) {
                 let st = (inCounters.length > 0) ? inCounters.pop() : allStaffs.pop();
                 if (st) {
-                    st.style.display = 'none';
-                    st.classList.add('scenario-removed');
+                    st.remove();
                 }
             }
         }
