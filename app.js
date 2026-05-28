@@ -64,21 +64,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const scenarios = [
         { name:"Akshaya Tritiya Rush", effect:"+5 customers" },
-        { name:"Staff Shortage", effect:"Remove 2 staff from random counter" },
-        { name:"Billing Lag", effect:"Billing capacity 50%" },
-        { name:"Appraiser Backlog", effect:"1 staff = 1 customer" },
-        { name:"VIP Visit", effect:"Priority diamond customer" },
-        { name:"Power Issue", effect:"50% staff removed" },
-        { name:"Server Down", effect:"No billing movement" },
+        { name:"Staff Shortage", effect:"Remove 2 staff. Released next round" },
+        { name:"Billing Lag", effect:"Billing capacity 50%. For one round" },
+        { name:"Appraiser Backlog", effect:"1 staff = 1 customer. For one round" },
+        { name:"VIP Visit", effect:"Priority diamond customer (Move to Live Room). Locks 1 staff" },
+        { name:"Power Issue", effect:"50% staff removed. Released next round" },
+        { name:"Server Down", effect:"No billing movement. For one round" },
         { name:"Festival Crowd", effect:"Double penalty" },
-        { name:"Home Selling Visit", effect:"Remove 4 staff" },
+        { name:"Home Selling Visit", effect:"Remove 4 staff. Released next round" },
         { name:"Golden Pulse", effect:"Reassign mid round" },
-        { name:"Digital Failure", effect:"Billing 1:1" },
+        { name:"Digital Failure", effect:"Billing 1:1. For one round" },
         { name:"Gold Rate Drop", effect:"+6 gold customers" },
         { name:"Scheme Closure", effect:"+8 silver customers" },
-        { name:"Bridal Rush", effect:"Diamond capacity 1:1" },
-        { name:"Tagging Error", effect:"Billing delay" },
-        { name:"Goldsmith Emergency", effect:"1 appraiser locked" }
+        { name:"Bridal Rush", effect:"Diamond capacity 1:1. For one round" },
+        { name:"Tagging Error", effect:"Billing delay. For one round" },
+        { name:"Goldsmith Emergency", effect:"1 appraiser locked. For one round" }
     ];
 
     const state = {
@@ -196,6 +196,18 @@ document.addEventListener('DOMContentLoaded', () => {
             c.waitedLastRound = false;
             c.waitCount = 0;
             c.status = 'green';
+            
+            if (c.uid.startsWith('vip_')) {
+                // Lock 1 staff for VIP
+                let tokens = Array.from(DOM.staffPool.children).filter(el => !el.classList.contains('scenario-removed'));
+                if (tokens.length > 0) {
+                    let st = tokens[tokens.length - 1];
+                    st.style.display = 'none';
+                    st.classList.add('scenario-removed');
+                    DOM.staffPool.appendChild(st);
+                    updateStaffCount();
+                }
+            }
         }
         task.completed = true;
         ctxMenu.classList.add('hidden');
@@ -300,8 +312,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (plusBtn) {
                 plusBtn.addEventListener('click', () => {
                     if (state.phase !== 'PLANNING' && !(state.currentScenario && state.currentScenario.name === 'Golden Pulse')) return;
-                    if (DOM.staffPool.children.length > 0) {
-                        const token = DOM.staffPool.lastElementChild;
+                    let tokens = Array.from(DOM.staffPool.children).filter(el => !el.classList.contains('scenario-removed'));
+                    if (tokens.length > 0) {
+                        const token = tokens[tokens.length - 1];
                         staffSlots.appendChild(token);
                         updateAllZoneCapacities();
                         updateStaffCount();
@@ -324,7 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateStaffCount() {
-        DOM.staffAvailable.innerText = DOM.staffPool.children.length;
+        let available = Array.from(DOM.staffPool.children).filter(el => !el.classList.contains('scenario-removed')).length;
+        DOM.staffAvailable.innerText = available;
     }
 
     function getZoneCapacity(zoneName) {
@@ -408,12 +422,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (state.currentScenario.name === "Gold Rate Drop") specialAdds.push(...generateCustomers(6, 'gold'));
             if (state.currentScenario.name === "Scheme Closure") specialAdds.push(...generateCustomers(8, 'silver'));
             if (state.currentScenario.name === "VIP Visit") {
+                let vipUid = 'vip_' + Date.now();
                 let vip = {
-                    id: 999, name: "VIP Elite", value: 600000, path: ["Diamond", "Billing"], time: 2, status: "new",
-                    uid: 'vip_' + Date.now(), currentZone: 'diamond', stepIndex: 0, waitCount: 0, totalWaitRounds: 0,
+                    id: 999, name: "VIP Elite", value: 600000, path: ["liveroom", "Billing"], time: 2, status: "new",
+                    uid: vipUid, currentZone: 'entrance', stepIndex: -1, waitCount: 0, totalWaitRounds: 0,
                     waitedLastRound: false, active: true, finished: false, category: "Diamond", unit: "carats", price: 90000, quantity: (600000/90000).toFixed(2), arrivalRound: state.round
                 };
                 specialAdds.push(vip);
+                
+                // Instantly add directive to move VIP
+                let taskId = 't_' + Date.now();
+                state.headOfficeTasks.push({ id: taskId, customerUid: vipUid, type: 'LIVE_ROOM', completed: false, name: vip.name });
+                
+                let logEl = document.getElementById('bo-log');
+                if (logEl) {
+                    if(logEl.innerHTML.includes('Awaiting')) logEl.innerHTML = '';
+                    logEl.innerHTML = `<div style="background:rgba(255,140,0,0.1); border-left:3px solid var(--accent-orange); padding:10px; margin-bottom:5px;"><b>HO DIRECTIVE:</b><br>Priority VIP! Send ${vip.name} to Live Room immediately.</div>` + logEl.innerHTML;
+                }
+                let boBadge = document.getElementById('bo-badge');
+                if(boBadge) boBadge.classList.remove('hidden');
             }
         }
 
@@ -692,32 +719,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         activeCusts.forEach(c => {
-            if (c.uid.startsWith('vip_')) {
-                c.time--;
-                let curZ = zoneMap[c.currentZone] || c.currentZone.toLowerCase();
-                if (curZ === 'diamond') {
-                    let staffAtDiamond = document.querySelector(`.zone-card[data-zone="diamond"] .staff-slots`).children.length;
-                    if (staffAtDiamond >= 2) {
-                        capacities['diamond'] -= 4; // VIP consumes 2 staff
-                        c.active = false;
-                        c.finished = true;
-                        c.status = 'green';
-                        state.stats.earnings += c.value;
-                        state.stats.handled++;
-                        state.stats.salesDiamond += parseFloat(c.quantity);
-                    } else {
-                        c.active = false;
-                        c.walkedOut = true;
-                        state.stats.penalties += 100000;
-                        state.stats.walkouts++;
-                        state.walkoutRecords.push({
-                            name: c.name, zone: 'Diamond', type: 'Inside Counter', timeWaited: 0, roundsWaited: 0, valueLost: c.value
-                        });
-                    }
-                }
-                return;
-            }
-
             c.time--;
 
             if (c.justEnteredLiveRoom) {
@@ -812,7 +813,9 @@ document.addEventListener('DOMContentLoaded', () => {
             for(let i=0; i<toRemove; i++) {
                 let st = (inCounters.length > 0) ? inCounters.pop() : allStaffs.pop();
                 if (st) {
-                    st.remove();
+                    st.style.display = 'none';
+                    st.classList.add('scenario-removed');
+                    DOM.staffPool.appendChild(st);
                 }
             }
         }
@@ -895,6 +898,15 @@ document.addEventListener('DOMContentLoaded', () => {
             showSummary();
             return;
         }
+
+        // Restore temporarily removed staff
+        document.querySelectorAll('.staff-token.scenario-removed').forEach(st => {
+            st.classList.remove('scenario-removed');
+            st.style.display = ''; // restore visibility
+            DOM.staffPool.appendChild(st);
+        });
+        updateAllZoneCapacities();
+        updateStaffCount();
 
         if (state.round === 1) {
             addNewCustomers();
